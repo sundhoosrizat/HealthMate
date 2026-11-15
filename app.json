@@ -7,17 +7,26 @@
     "icon": "./assets/images/icon.png",
     "scheme": "healthmate",
     "userInterfaceStyle": "automatic",
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
+      "package": "com.sundhoosrizat.healthmate",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#F4F8FC"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
+
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       [
         "expo-image-picker",
@@ -25,6 +34,12 @@
           "photosPermission": "HealthMate needs access to your gallery to update your profile picture."
         }
       ]
-    ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "f495a28a-824e-44ac-9eda-240e399329da"
+      }
+    }
   }
 }

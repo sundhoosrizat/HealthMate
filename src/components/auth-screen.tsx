@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Image,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
@@ -13,6 +14,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
 
 import {
     createUserWithEmailAndPassword,
@@ -29,6 +32,9 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -91,7 +97,7 @@ export default function AuthScreen() {
         });
 
         Alert.alert(
-          'Account Created Successfully! 🎉',
+          'Account Created Successfully!',
           `Welcome, ${name.trim()}!\n\nYour HealthMate journey starts now.`,
         );
       } else {
@@ -105,9 +111,10 @@ export default function AuthScreen() {
           userCredential.user.displayName?.trim() ||
           cleanEmail.split('@')[0];
 
+        // Updated Login Success Message
         Alert.alert(
-          'Login Successful! 🎉',
-          `Welcome, ${username}!\n\nWelcome back to HealthMate. Stay healthy and active! 💚`,
+          'Welcome to HealthMate',
+          `Hello, ${username}! You have successfully logged in.`,
         );
       }
     } catch (error: any) {
@@ -177,15 +184,17 @@ export default function AuthScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* HealthMate Logo */}
+
           <View style={styles.logoContainer}>
-            <Text style={styles.logo}>💚</Text>
-
-            <Text style={styles.appName}>HealthMate</Text>
-
-            <Text style={styles.tagline}>
-              Your Personal Health Companion
-            </Text>
+            <Image
+              source={require('../../assets/images/healthmate-logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
+
+          {/* Authentication Form */}
 
           <View style={styles.formCard}>
             <Text style={styles.title}>
@@ -197,6 +206,8 @@ export default function AuthScreen() {
                 ? 'Create your account to start your health journey.'
                 : 'Login to continue your health journey.'}
             </Text>
+
+            {/* Full Name */}
 
             {isSignUp && (
               <>
@@ -213,6 +224,8 @@ export default function AuthScreen() {
               </>
             )}
 
+            {/* Email Address */}
+
             <Text style={styles.label}>Email Address</Text>
 
             <TextInput
@@ -226,17 +239,39 @@ export default function AuthScreen() {
               autoCorrect={false}
             />
 
+            {/* Password */}
+
             <Text style={styles.label}>Password</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#A0AEC0"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter your password"
+                placeholderTextColor="#A0AEC0"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!passwordVisible}
+                autoCapitalize="none"
+              />
+
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={
+                    passwordVisible
+                      ? 'eye-off-outline'
+                      : 'eye-outline'
+                  }
+                  size={23}
+                  color="#718096"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Confirm Password */}
 
             {isSignUp && (
               <>
@@ -246,17 +281,39 @@ export default function AuthScreen() {
 
                 <Text style={styles.label}>Confirm Password</Text>
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm your password"
-                  placeholderTextColor="#A0AEC0"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Confirm your password"
+                    placeholderTextColor="#A0AEC0"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!confirmPasswordVisible}
+                    autoCapitalize="none"
+                  />
+
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() =>
+                      setConfirmPasswordVisible(!confirmPasswordVisible)
+                    }
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={
+                        confirmPasswordVisible
+                          ? 'eye-off-outline'
+                          : 'eye-outline'
+                      }
+                      size={23}
+                      color="#718096"
+                    />
+                  </TouchableOpacity>
+                </View>
               </>
             )}
+
+            {/* Login / Create Account Button */}
 
             <TouchableOpacity
               style={[
@@ -276,6 +333,8 @@ export default function AuthScreen() {
               )}
             </TouchableOpacity>
 
+            {/* Switch Login / Sign Up */}
+
             <View style={styles.switchContainer}>
               <Text style={styles.switchText}>
                 {isSignUp
@@ -288,6 +347,8 @@ export default function AuthScreen() {
                   setIsSignUp(!isSignUp);
                   setPassword('');
                   setConfirmPassword('');
+                  setPasswordVisible(false);
+                  setConfirmPasswordVisible(false);
                 }}
                 disabled={loading}
               >
@@ -297,6 +358,8 @@ export default function AuthScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Footer */}
 
           <Text style={styles.footer}>
             Stay Healthy. Stay Active. 💚
@@ -326,24 +389,12 @@ const styles = StyleSheet.create({
 
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
   },
 
-  logo: {
-    fontSize: 55,
-  },
-
-  appName: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#163A5F',
-    marginTop: 8,
-  },
-
-  tagline: {
-    fontSize: 13,
-    color: '#718096',
-    marginTop: 5,
+  logoImage: {
+    width: 250,
+    height: 250,
   },
 
   formCard: {
@@ -387,6 +438,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#172B4D',
     marginBottom: 17,
+  },
+
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F8FC',
+    borderWidth: 1,
+    borderColor: '#DCE5EF',
+    borderRadius: 10,
+    marginBottom: 17,
+    minHeight: 48,
+  },
+
+  passwordInput: {
+    flex: 1,
+    padding: 13,
+    fontSize: 14,
+    color: '#172B4D',
+  },
+
+  eyeButton: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   passwordHint: {
