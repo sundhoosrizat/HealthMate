@@ -1,29 +1,37 @@
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { FirebaseError } from 'firebase/app';
 
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    updateProfile,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
 
 import { auth } from '../../firebase';
+
+type TextInputRef = ComponentRef<typeof TextInput>;
+
+const PASSWORD_HINT =
+  'Use at least 8 characters with an uppercase letter, a lowercase letter, a number, and a special character such as ! or @.';
+
+const PASSWORD_SYMBOLS = "^$*.[]{}()?\"!@#%&/\\,><':;|_~";
 
 export default function AuthScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -35,8 +43,11 @@ export default function AuthScreen() {
 
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-
   const [loading, setLoading] = useState(false);
+
+  const emailRef = useRef<TextInputRef>(null);
+  const passwordRef = useRef<TextInputRef>(null);
+  const confirmPasswordRef = useRef<TextInputRef>(null);
 
   const handleAuthentication = async () => {
     const cleanEmail = email.trim().toLowerCase();
@@ -56,30 +67,26 @@ export default function AuthScreen() {
       return;
     }
 
-    if (isSignUp && password.length < 8) {
-      Alert.alert(
-        'Weak Password',
-        'Password must contain at least 8 characters.',
+    if (isSignUp) {
+      const hasSpecialCharacter = Array.from(password).some((character) =>
+        PASSWORD_SYMBOLS.includes(character),
       );
-      return;
-    }
 
-    if (
-      isSignUp &&
-      (!/[A-Z]/.test(password) ||
+      if (
+        password.length < 8 ||
+        !/[A-Z]/.test(password) ||
         !/[a-z]/.test(password) ||
-        !/[0-9]/.test(password))
-    ) {
-      Alert.alert(
-        'Weak Password',
-        'Use uppercase, lowercase and at least one number.',
-      );
-      return;
-    }
+        !/[0-9]/.test(password) ||
+        !hasSpecialCharacter
+      ) {
+        Alert.alert('Password Requirements', PASSWORD_HINT);
+        return;
+      }
 
-    if (isSignUp && password !== confirmPassword) {
-      Alert.alert('Password Error', 'Passwords do not match.');
-      return;
+      if (password !== confirmPassword) {
+        Alert.alert('Password Error', 'Passwords do not match.');
+        return;
+      }
     }
 
     try {
@@ -108,23 +115,30 @@ export default function AuthScreen() {
         );
 
         const username =
-          userCredential.user.displayName?.trim() ||
-          cleanEmail.split('@')[0];
+          userCredential.user.displayName?.trim() || cleanEmail.split('@')[0];
 
-        // Updated Login Success Message
         Alert.alert(
-          'Welcome to HealthMate',
+          'Welcome to HealthMate!',
           `Hello, ${username}! You have successfully logged in.`,
         );
       }
-    } catch (error: any) {
-      console.error('Firebase Authentication Error:', error);
-      console.error('Error Code:', error?.code);
-      console.error('Error Message:', error?.message);
+    } catch (error: unknown) {
+      if (!(error instanceof FirebaseError)) {
+        Alert.alert('Authentication Failed', 'Something went wrong. Please try again.');
+        return;
+      }
 
-      let message = error?.message || 'Unknown authentication error.';
+      if (
+        error.code === 'auth/password-does-not-meet-requirements' ||
+        error.code === 'auth/weak-password'
+      ) {
+        Alert.alert('Password Requirements', PASSWORD_HINT);
+        return;
+      }
 
-      switch (error?.code) {
+      let message = error.message;
+
+      switch (error.code) {
         case 'auth/email-already-in-use':
           message = 'This email is already registered.';
           break;
@@ -137,10 +151,6 @@ export default function AuthScreen() {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
           message = 'Invalid email or password.';
-          break;
-
-        case 'auth/weak-password':
-          message = 'Please choose a stronger password.';
           break;
 
         case 'auth/network-request-failed':
@@ -166,7 +176,7 @@ export default function AuthScreen() {
 
       Alert.alert(
         'Authentication Failed',
-        `${message}\n\nError Code: ${error?.code || 'Unknown'}`,
+        `${message}\n\nError Code: ${error.code}`,
       );
     } finally {
       setLoading(false);
@@ -184,8 +194,6 @@ export default function AuthScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* HealthMate Logo */}
-
           <View style={styles.logoContainer}>
             <Image
               source={require('../../assets/images/healthmate-logo.png')}
@@ -193,8 +201,6 @@ export default function AuthScreen() {
               resizeMode="contain"
             />
           </View>
-
-          {/* Authentication Form */}
 
           <View style={styles.formCard}>
             <Text style={styles.title}>
@@ -207,8 +213,6 @@ export default function AuthScreen() {
                 : 'Login to continue your health journey.'}
             </Text>
 
-            {/* Full Name */}
-
             {isSignUp && (
               <>
                 <Text style={styles.label}>Full Name</Text>
@@ -220,15 +224,17 @@ export default function AuthScreen() {
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="words"
+                  returnKeyType="next"
+                  submitBehavior="submit"
+                  onSubmitEditing={() => emailRef.current?.focus()}
                 />
               </>
             )}
 
-            {/* Email Address */}
-
             <Text style={styles.label}>Email Address</Text>
 
             <TextInput
+              ref={emailRef}
               style={styles.input}
               placeholder="Enter your email"
               placeholderTextColor="#A0AEC0"
@@ -237,14 +243,16 @@ export default function AuthScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
-
-            {/* Password */}
 
             <Text style={styles.label}>Password</Text>
 
             <View style={styles.passwordContainer}>
               <TextInput
+                ref={passwordRef}
                 style={styles.passwordInput}
                 placeholder="Enter your password"
                 placeholderTextColor="#A0AEC0"
@@ -252,6 +260,13 @@ export default function AuthScreen() {
                 onChangeText={setPassword}
                 secureTextEntry={!passwordVisible}
                 autoCapitalize="none"
+                returnKeyType={isSignUp ? 'next' : 'done'}
+                submitBehavior={isSignUp ? 'submit' : 'blurAndSubmit'}
+                onSubmitEditing={() => {
+                  if (isSignUp) {
+                    confirmPasswordRef.current?.focus();
+                  }
+                }}
               />
 
               <TouchableOpacity
@@ -260,29 +275,22 @@ export default function AuthScreen() {
                 activeOpacity={0.7}
               >
                 <Ionicons
-                  name={
-                    passwordVisible
-                      ? 'eye-off-outline'
-                      : 'eye-outline'
-                  }
+                  name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
                   size={23}
                   color="#718096"
                 />
               </TouchableOpacity>
             </View>
 
-            {/* Confirm Password */}
-
             {isSignUp && (
               <>
-                <Text style={styles.passwordHint}>
-                  Minimum 8 characters, uppercase, lowercase and a number.
-                </Text>
+                <Text style={styles.passwordHint}>{PASSWORD_HINT}</Text>
 
                 <Text style={styles.label}>Confirm Password</Text>
 
                 <View style={styles.passwordContainer}>
                   <TextInput
+                    ref={confirmPasswordRef}
                     style={styles.passwordInput}
                     placeholder="Confirm your password"
                     placeholderTextColor="#A0AEC0"
@@ -290,6 +298,8 @@ export default function AuthScreen() {
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!confirmPasswordVisible}
                     autoCapitalize="none"
+                    returnKeyType="done"
+                    submitBehavior="blurAndSubmit"
                   />
 
                   <TouchableOpacity
@@ -313,13 +323,8 @@ export default function AuthScreen() {
               </>
             )}
 
-            {/* Login / Create Account Button */}
-
             <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                loading && styles.disabledButton,
-              ]}
+              style={[styles.primaryButton, loading && styles.disabledButton]}
               onPress={handleAuthentication}
               disabled={loading}
               activeOpacity={0.8}
@@ -332,8 +337,6 @@ export default function AuthScreen() {
                 </Text>
               )}
             </TouchableOpacity>
-
-            {/* Switch Login / Sign Up */}
 
             <View style={styles.switchContainer}>
               <Text style={styles.switchText}>
@@ -359,11 +362,7 @@ export default function AuthScreen() {
             </View>
           </View>
 
-          {/* Footer */}
-
-          <Text style={styles.footer}>
-            Stay Healthy. Stay Active. 💚
-          </Text>
+          <Text style={styles.footer}>Stay Healthy. Stay Active. 💚</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -374,29 +373,24 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-
   safeArea: {
     flex: 1,
     backgroundColor: '#F4F8FC',
   },
-
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 22,
     paddingVertical: 30,
   },
-
   logoContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
-
   logoImage: {
     width: 250,
     height: 250,
   },
-
   formCard: {
     backgroundColor: '#FFFFFF',
     padding: 22,
@@ -407,13 +401,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
   },
-
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#163A5F',
   },
-
   subtitle: {
     fontSize: 13,
     color: '#718096',
@@ -421,14 +413,12 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     lineHeight: 20,
   },
-
   label: {
     fontSize: 13,
     fontWeight: '600',
     color: '#172B4D',
     marginBottom: 7,
   },
-
   input: {
     backgroundColor: '#F4F8FC',
     borderWidth: 1,
@@ -439,7 +429,6 @@ const styles = StyleSheet.create({
     color: '#172B4D',
     marginBottom: 17,
   },
-
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -450,28 +439,24 @@ const styles = StyleSheet.create({
     marginBottom: 17,
     minHeight: 48,
   },
-
   passwordInput: {
     flex: 1,
     padding: 13,
     fontSize: 14,
     color: '#172B4D',
   },
-
   eyeButton: {
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   passwordHint: {
     fontSize: 11,
     color: '#718096',
     marginTop: -10,
     marginBottom: 15,
   },
-
   primaryButton: {
     backgroundColor: '#20B8A5',
     padding: 15,
@@ -479,35 +464,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
   },
-
   disabledButton: {
     opacity: 0.6,
   },
-
   primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 'bold',
   },
-
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 22,
     flexWrap: 'wrap',
   },
-
   switchText: {
     color: '#718096',
     fontSize: 13,
   },
-
   switchLink: {
     color: '#20B8A5',
     fontWeight: 'bold',
     fontSize: 13,
   },
-
   footer: {
     textAlign: 'center',
     color: '#718096',
