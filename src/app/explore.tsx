@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import {
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -81,7 +82,7 @@ export default function ExploreScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleCategory = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+    setExpandedId((currentId) => (currentId === id ? null : id));
   };
 
   return (
@@ -101,16 +102,18 @@ export default function ExploreScreen() {
         {/* Welcome Card */}
         <View style={styles.welcomeCard}>
           <View style={styles.welcomeTextContainer}>
-            <Text style={styles.welcomeTitle}>
-              Your Health Matters!
-            </Text>
-
+            <Text style={styles.welcomeTitle}>Your Health Matters!</Text>
             <Text style={styles.welcomeDescription}>
               Explore simple tips to build a healthier and happier lifestyle.
             </Text>
           </View>
 
-          <Text style={styles.welcomeEmoji}>🌿</Text>
+          <Image
+            source={require('@/assets/images/without_bg_logo.png')}
+            style={styles.welcomeImage}
+            resizeMode="contain"
+            accessibilityLabel="HealthMate"
+          />
         </View>
 
         {/* Section Heading */}
@@ -138,25 +141,18 @@ export default function ExploreScreen() {
                     { backgroundColor: category.color },
                   ]}
                 >
-                  <Text style={styles.categoryIcon}>
-                    {category.icon}
-                  </Text>
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
                 </View>
 
                 <View style={styles.categoryInfo}>
-                  <Text style={styles.categoryTitle}>
-                    {category.title}
-                  </Text>
-
+                  <Text style={styles.categoryTitle}>{category.title}</Text>
                   <Text style={styles.categorySubtitle}>
                     {category.subtitle}
                   </Text>
                 </View>
 
                 <View style={styles.arrowContainer}>
-                  <Text style={styles.arrow}>
-                    {isExpanded ? '−' : '+'}
-                  </Text>
+                  <Text style={styles.arrow}>{isExpanded ? '−' : '+'}</Text>
                 </View>
               </TouchableOpacity>
 
@@ -164,15 +160,12 @@ export default function ExploreScreen() {
                 <View style={styles.tipsContainer}>
                   <View style={styles.divider} />
 
-                  {category.tips.map((tip, index) => (
-                    <View key={index} style={styles.tipRow}>
+                  {category.tips.map((tip) => (
+                    <View key={tip} style={styles.tipRow}>
                       <View style={styles.tipBullet}>
                         <Text style={styles.checkMark}>✓</Text>
                       </View>
-
-                      <Text style={styles.tipText}>
-                        {tip}
-                      </Text>
+                      <Text style={styles.tipText}>{tip}</Text>
                     </View>
                   ))}
                 </View>
@@ -183,11 +176,14 @@ export default function ExploreScreen() {
 
         {/* Bottom Message */}
         <View style={styles.footerCard}>
-          <Text style={styles.footerEmoji}>💚</Text>
+          <Image
+            source={require('@/assets/images/healthmate-logo.png')}
+            style={styles.footerLogo}
+            resizeMode="cover"
+            accessibilityLabel="HealthMate"
+          />
 
-          <Text style={styles.footerTitle}>
-            Stay Healthy, Stay Happy!
-          </Text>
+          <Text style={styles.footerTitle}>Stay Healthy, Stay Happy!</Text>
 
           <Text style={styles.footerDescription}>
             Consistency is the key to a healthier lifestyle.
@@ -254,8 +250,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  welcomeEmoji: {
-    fontSize: 45,
+  welcomeImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
   },
 
   sectionHeader: {
@@ -385,8 +383,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  footerEmoji: {
-    fontSize: 30,
+  footerLogo: {
+    width: 160,
+    height: 32,
     marginBottom: 8,
   },
 

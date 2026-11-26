@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+
   Text,
   TextInput,
   TouchableOpacity,
@@ -119,7 +120,7 @@ export default function AuthScreen() {
 
         Alert.alert(
           'Welcome to HealthMate!',
-          `Hello, ${username}! You have successfully logged in.`,
+          `Hello, ${username}! \nYou have successfully logged in.`,
         );
       }
     } catch (error: unknown) {
@@ -362,7 +363,7 @@ export default function AuthScreen() {
             </View>
           </View>
 
-          <Text style={styles.footer}>Stay Healthy. Stay Active. 💚</Text>
+          <Text style={styles.footer}>Stay Healthy. Stay Active. </Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

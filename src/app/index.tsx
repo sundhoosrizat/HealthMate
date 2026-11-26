@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -148,10 +149,16 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>HealthMate 💙</Text>
+          <Image
+            source={require('../../assets/images/healthmate-logo.png')}
+            style={styles.headerLogo}
+            resizeMode="cover"
+            accessible
+            accessibilityLabel="HealthMate"
+          />
+
           <Text style={styles.subtitle}>
             Your Personal Health & Wellness Tracker
           </Text>
@@ -166,14 +173,12 @@ export default function HomeScreen() {
           </Text>
 
           <View style={styles.dateBadge}>
-            <Text style={styles.date}>📅 {getTodayDate()}</Text>
+            <Text style={styles.date}>Today : {getTodayDate()}</Text>
           </View>
         </View>
 
         {/* Health Summary */}
-        <Text style={styles.sectionTitle}>
-          Today's Health Summary
-        </Text>
+        <Text style={styles.sectionTitle}>Today's Health Summary</Text>
 
         <View style={styles.summaryContainer}>
           <View style={styles.card}>
@@ -196,9 +201,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Add Health Record */}
-        <Text style={styles.sectionTitle}>
-          Add Health Record
-        </Text>
+        <Text style={styles.sectionTitle}>Add Health Record</Text>
 
         <View style={styles.formContainer}>
           <Text style={styles.formSubtitle}>
@@ -206,7 +209,6 @@ export default function HomeScreen() {
           </Text>
 
           <Text style={styles.inputLabel}>👣 Steps Walked</Text>
-
           <TextInput
             style={styles.input}
             placeholder="Enter number of steps"
@@ -217,7 +219,6 @@ export default function HomeScreen() {
           />
 
           <Text style={styles.inputLabel}>🔥 Calories Burned</Text>
-
           <TextInput
             style={styles.input}
             placeholder="Enter calories burned"
@@ -228,7 +229,6 @@ export default function HomeScreen() {
           />
 
           <Text style={styles.inputLabel}>💧 Water Intake (ml)</Text>
-
           <TextInput
             style={styles.input}
             placeholder="Enter water intake"
@@ -243,16 +243,11 @@ export default function HomeScreen() {
             onPress={handleSaveRecord}
             activeOpacity={0.8}
           >
-            <Text style={styles.saveButtonText}>
-              + Save Health Record
-            </Text>
+            <Text style={styles.saveButtonText}>+ Save Health Record</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footerText}>
-          Stay Healthy. Stay Active. 💚
-        </Text>
-
+        <Text style={styles.footerText}>Stay Healthy. Stay Active. </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -282,10 +277,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#163A5F',
+  headerLogo: {
+    width: 170,
+    height: 34,
   },
 
   subtitle: {

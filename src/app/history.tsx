@@ -1,30 +1,30 @@
 import { useCallback, useState } from 'react';
 
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Modal,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import DateTimePicker, {
-    DateTimePickerEvent,
+  DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-    deleteHealthRecord,
-    getAllHealthRecords,
-    searchHealthRecordsByDate,
-    updateHealthRecord,
+  deleteHealthRecord,
+  getAllHealthRecords,
+  searchHealthRecordsByDate,
+  updateHealthRecord,
 } from '../../database/healthDatabase';
 
 interface HealthRecord {
@@ -250,7 +250,7 @@ export default function HistoryScreen() {
   // Record card
   const renderRecord = ({ item }: { item: HealthRecord }) => (
     <View style={styles.recordCard}>
-      <Text style={styles.date}>📅 {item.date}</Text>
+      <Text style={styles.date}> {item.date}</Text>
 
       <View style={styles.details}>
         <Text style={styles.detail}>👣 Steps: {item.steps}</Text>
@@ -293,7 +293,7 @@ export default function HistoryScreen() {
           onPress={openDatePicker}
         >
           <Text style={styles.datePickerText}>
-            {searchDate || '📅 Select a date'}
+            {searchDate || 'Select a date'}
           </Text>
 
           <Text style={styles.calendarIcon}>📅</Text>
